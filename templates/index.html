@@ -870,7 +870,7 @@
 
       <!-- Modal Order Form -->
       <div id="buy-ticket-modal" class="modal fade">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
           <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title">Buy Tickets</h4>
@@ -879,21 +879,60 @@
               </button>
             </div>
             <div class="modal-body">
-              <form method="POST" action="#">
+              <form method="POST" action="#" onsubmit="submitEnrollment(event);">
+
                 <div class="form-group">
-                  <input type="text" class="form-control" name="your-name" placeholder="Your Name">
+                  <label for="phone-input">Contact Phone:</label>
+                  <input type="tel" class="form-control" id="phone-input" placeholder="+1 5589 ..." required>
                 </div>
+
                 <div class="form-group">
-                  <input type="text" class="form-control" name="your-email" placeholder="Your Email">
-                </div>
-                <div class="form-group">
-                  <select id="ticket-type" name="ticket-type" class="form-control">
+                  <select id="ticket-type" name="ticket-type" class="form-control" required>
                     <option value="">-- Select Your Ticket Type --</option>
                     <option value="standard-access">Standard Access</option>
                     <option value="pro-access">Pro Access</option>
                     <option value="premium-access">Premium Access</option>
                   </select>
                 </div>
+
+                <h5 class="mt-4 mb-3">Specify all participants:</h5>
+
+                <div class="form-row mb-3">
+                  <div class="col">
+                    <input type="text" class="form-control" name="first-name" placeholder="First name">
+                  </div>
+                  <div class="col">
+                    <input type="text" class="form-control" name="last-name" placeholder="Last name">
+                  </div>
+                  <div class="col">
+                    <input type="email" class="form-control" name="email" placeholder="Email">
+                  </div>
+                </div>
+
+                <div class="form-row mb-3">
+                  <div class="col">
+                    <input type="text" class="form-control" name="first-name" placeholder="First name">
+                  </div>
+                  <div class="col">
+                    <input type="text" class="form-control" name="last-name" placeholder="Last name">
+                  </div>
+                  <div class="col">
+                    <input type="email" class="form-control" name="email" placeholder="Email">
+                  </div>
+                </div>
+
+                <div class="form-row mb-3">
+                  <div class="col">
+                    <input type="text" class="form-control" name="first-name" placeholder="First name">
+                  </div>
+                  <div class="col">
+                    <input type="text" class="form-control" name="last-name" placeholder="Last name">
+                  </div>
+                  <div class="col">
+                    <input type="email" class="form-control" name="email" placeholder="Email">
+                  </div>
+                </div>
+
                 <div class="text-center">
                   <button type="submit" class="btn">Buy Now</button>
                 </div>
@@ -903,6 +942,28 @@
         </div><!-- /.modal-dialog -->
       </div><!-- /.modal -->
 
+      <!-- Modal Order Form -->
+      <div id="enrollment-done-modal" class="modal fade">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Registered!</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>
+                Your application is accepted! We will call you back within 10 minutes.
+              </p>
+
+              <div class="text-center">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+              </div>
+            </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+      </div><!-- /.modal -->
     </section><!-- End Buy Ticket Section -->
 
     <!-- ======= Contact Section ======= -->
@@ -980,6 +1041,85 @@
 
 {% block extrafooter %}
   <script>if( window.self == window.top ) { (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','//www.google-analytics.com/analytics.js','ga'); ga('create', 'UA-55234356-4', 'auto'); ga('send', 'pageview'); } </script>
+
+  <script type="text/javascript">
+    function getCookie(name) {
+      // Copied from https://docs.djangoproject.com/en/3.0/ref/csrf/#acquiring-the-token-if-csrf-use-sessions-and-csrf-cookie-httponly-are-false
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+    }
+
+    function* getParticipants(inputs){
+      let iterator = inputs.values();
+      for (let i=0; i<3; i++){
+        let first_name = iterator.next().value.value;
+        let last_name = iterator.next().value.value;
+        let email = iterator.next().value.value;
+
+        if (!first_name && !last_name && !email){
+          continue;
+        }
+
+        yield {
+          first_name,
+          last_name,
+          email,
+        }
+      }
+    }
+
+    async function submitEnrollment(event){
+      event.preventDefault();
+
+      let form = document.querySelector('#buy-ticket-modal form');
+
+      let ticketTypeSelect = form.querySelector('select');
+      let [contactPhoneInput, ...participantsInputs] = form.querySelectorAll('input');
+
+      let postData = {
+        contact_phone: contactPhoneInput.value,
+        ticket_type: ticketTypeSelect.value,
+        participants: Array.from(getParticipants(participantsInputs)),
+      }
+
+      let response = await fetch("{% url 'enroll' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+          'Content-Type': 'application/json',
+          'Accept': 'application/json; indent=4',
+        },
+        body: JSON.stringify(postData), // body data type must match "Content-Type" header
+      });
+      let responseData = await response.json();
+
+      if (!response.ok){
+        // FIXME display all form errors, highlight fields with errors
+        alert('Error. Incorrect form data.')
+        return
+      }
+
+      $('#buy-ticket-modal').modal('hide').on('hidden.bs.modal', ()=>{
+        $('#enrollment-done-modal').modal('show');
+      });
+    }
+
+
+
+
+  </script>
+
 {% endblock %}
 
 </html>
