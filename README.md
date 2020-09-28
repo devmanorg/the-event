@@ -51,4 +51,4 @@ python manage.py runserver
 
 Где используется репозиторий:
 
-- Туториал [Как проверить данные с помощью DRF](https://devman.org/encyclopedia/django/validate-data-with-drf/)
+- Туториал [Как проверить данные с помощью DRF](https://devman.org/encyclopedia/django_rest_framework/validate-data-with-drf/)
