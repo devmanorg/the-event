@@ -6,18 +6,13 @@ from .models import Application, Participant
 
 @api_view(['POST'])
 def enroll(request):
-    errors = []
-
     if 'contact_phone' not in request.data:
-        errors.append('Contact phone field is required.')
+        return Response(['Contact phone field is required.'], status=400)
 
     if 'ticket_type' not in request.data:
-        errors.append('Ticket type field is required.')
+        return Response(['Ticket type field is required.'], status=400)
     # TODO check if ticket_type is one of available choices
-
-    if errors:
-        return Response(errors, status=400)
-
+    
     participants = request.data.get('participants', [])  # TODO validate data!
 
     application = Application.objects.create(
